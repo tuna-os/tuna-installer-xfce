@@ -9,8 +9,11 @@ import tempfile
 
 IN_FLATPAK = os.path.exists("/.flatpak-info")
 
+# Flatpak runtimes ship no pkexec; escalate host-side. The live ISO symlinks
+# the flatpak-bundled fisherman to /usr/local/bin and installs the polkit
+# policy for it (tunaOS customize-live.sh).
 FISHERMAN_CMD = (
-    ["pkexec", "/app/bin/fisherman"]
+    ["flatpak-spawn", "--host", "pkexec", "/usr/local/bin/fisherman"]
     if IN_FLATPAK
     else ["sudo", "/usr/local/bin/fisherman"]
 )
