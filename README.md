@@ -1,5 +1,16 @@
 # TunaOS XFCE Installer — GTK3 frontend for fisherman
 
+<p align="center">
+  <img src="docs/screenshots/walkthrough.gif"
+       alt="The TunaOS XFCE installer, screen by screen: welcome, image selection, disk selection, filesystem and encryption, account, confirmation, install progress, and completion."
+       width="640">
+</p>
+
+<p align="center">
+  <em>Every frame is generated in CI from the real wizard — see the
+  <a href="docs/gui-walkthrough.md">step-by-step walkthrough</a>.</em>
+</p>
+
 Classic GTK3/PyGObject wizard that drives the
 [fisherman](https://github.com/projectbluefin/fisherman) bootc install
 backend. The plainest of the TunaOS installer frontends by design — see
