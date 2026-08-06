@@ -436,6 +436,19 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.refresh_nav()
 
     def refresh_nav(self):
+        # Pages call this during their own construction: SetupPage.__init__
+        # ends with _sync(), which calls refresh_nav(). At that moment
+        # self.pages is still being built and self.index does not exist yet, so
+        # this raised AttributeError and the window never opened — the
+        # installer could not start at all.
+        #
+        # Guarding here rather than reordering __init__, because reordering only
+        # moves the problem: refresh_nav needs the COMPLETE pages dict, which by
+        # definition does not exist while the pages are being constructed.
+        # __init__ calls _enter(0) once everything is built, which refreshes nav
+        # properly, so skipping early is correct rather than merely safe.
+        if not getattr(self, "pages", None):
+            return
         name = PAGE_ORDER[self.index]
         page = self.pages[name]
         self.back_btn.set_sensitive(name not in ("progress", "done") and self.index > 0)
