@@ -8,10 +8,10 @@
   "ocr": false,
   "screens": {
     "welcome": true,
-    "disk": false,
+    "disk": true,
     "encryption": false,
     "summary": true,
-    "install": false,
+    "install": true,
     "done": true
   },
   "strict": true,
@@ -32,9 +32,13 @@
     },
     "disk": {
       "required": true,
-      "reached": false,
-      "on_pages": [],
-      "matched_keywords": []
+      "reached": true,
+      "on_pages": [
+        "destination"
+      ],
+      "matched_keywords": [
+        "be installed"
+      ]
     },
     "encryption": {
       "required": false,
@@ -54,9 +58,14 @@
     },
     "install": {
       "required": false,
-      "reached": false,
-      "on_pages": [],
-      "matched_keywords": []
+      "reached": true,
+      "on_pages": [
+        "progress"
+      ],
+      "matched_keywords": [
+        "installing image",
+        "partitioning"
+      ]
     },
     "done": {
       "required": false,
@@ -75,78 +84,77 @@
       "name": "welcome",
       "png": "docs/screenshots/01-welcome.png",
       "rendered": true,
-      "colours": 230,
+      "colours": 235,
       "ink": 0.011494252873563218,
-      "stddev": 0.07299814419405236
+      "stddev": 0.07284130631590263
     },
     {
       "name": "source",
       "png": "docs/screenshots/02-source.png",
       "rendered": true,
-      "colours": 268,
-      "ink": 0.009802341819744334,
-      "stddev": 0.06516969806794067
+      "colours": 279,
+      "ink": 0.010070899129874316,
+      "stddev": 0.06565680074856858
     },
     {
       "name": "destination",
       "png": "docs/screenshots/03-destination.png",
       "rendered": true,
-      "colours": 289,
-      "ink": 0.012810183693200129,
-      "stddev": 0.07507502277664836
+      "colours": 306,
+      "ink": 0.01307874100333011,
+      "stddev": 0.07553911829536084
     },
     {
       "name": "setup",
       "png": "docs/screenshots/04-setup.png",
       "rendered": true,
-      "colours": 289,
-      "ink": 0.009184660006445376,
-      "stddev": 0.06496653937203384
+      "colours": 303,
+      "ink": 0.009453217316575358,
+      "stddev": 0.06556288147410178
     },
     {
       "name": "identity",
       "png": "docs/screenshots/05-identity.png",
       "rendered": true,
-      "colours": 218,
-      "ink": 0.006445375443119562,
-      "stddev": 0.05658357853676305
+      "colours": 238,
+      "ink": 0.006713932753249543,
+      "stddev": 0.057329400026395125
     },
     {
       "name": "confirm",
       "png": "docs/screenshots/06-confirm.png",
       "rendered": true,
-      "colours": 288,
-      "ink": 0.01396498012675905,
-      "stddev": 0.07504788826303768
+      "colours": 312,
+      "ink": 0.014072403050811044,
+      "stddev": 0.07520270917597661
     },
     {
       "name": "progress",
       "png": "docs/screenshots/07-progress.png",
       "rendered": true,
-      "colours": 301,
+      "colours": 300,
       "ink": 0.0352347190890536,
-      "stddev": 0.14620655160270776
+      "stddev": 0.14619703948573176
     },
     {
       "name": "done",
       "png": "docs/screenshots/08-done.png",
       "rendered": true,
-      "colours": 197,
-      "ink": 0.006901922870340531,
-      "stddev": 0.06115457712406414
+      "colours": 199,
+      "ink": 0.0068750671393275325,
+      "stddev": 0.06114672133076246
     }
   ],
   "transition_pixels": [
-    9427,
+    9456,
     9280,
     10335,
     10198,
-    12245,
-    19674,
-    23179
+    12223,
+    19638,
+    23177
   ],
   "spec_drift": [
-    "'disk' keywords differ from upstream",
     "'install' keywords differ from upstream"
   ],
   "notes": "GPU-less capture: pages are driven programmatically and text is read from the widget tree, so this reports SCREEN PARITY only. It does not measure keyboard navigation, compositor rendering, or that the frontend launches under its real desktop \u2014 those stay the VM walkthrough's job."
