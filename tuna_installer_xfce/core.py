@@ -32,6 +32,57 @@ OFFLINE_STORES_ENV = "TUNA_OFFLINE_STORES"
 OFFLINE_STORE_DEFAULT = "/usr/share/tuna-installer/oci-store"
 
 
+# --- product branding --------------------------------------------------------
+#
+# tunaOS builds one image per variant (Skipjack, Bonito, Yellowfin, ...) and
+# its build_scripts/90-image-info.sh writes a per-variant PRETTY_NAME into
+# /etc/os-release. Every user-visible product name here comes from that, so a
+# Skipjack ISO says "Skipjack" and not the family name.
+#
+# Inside the flatpak sandbox (org.tunaos.InstallerXfce) /etc/os-release is the
+# RUNTIME's, not the host's — the host's is bind-mounted at /run/host/etc. Read
+# the host copy first and fall back to the sandbox one, then to "TunaOS".
+
+PRODUCT_NAME_FALLBACK = "TunaOS"
+
+OS_RELEASE_PATHS = ["/run/host/etc/os-release", "/etc/os-release"]
+
+
+def _read_pretty_name(path):
+    """PRETTY_NAME out of one os-release file, or "" if unusable."""
+    try:
+        with open(path) as fh:
+            for line in fh:
+                line = line.strip()
+                if not line.startswith("PRETTY_NAME="):
+                    continue
+                value = line.split("=", 1)[1].strip()
+                # os-release values are usually quoted; shlex handles the
+                # escaping rules the format actually uses.
+                try:
+                    parts = shlex.split(value)
+                except ValueError:
+                    parts = [value.strip('"\'')]
+                return (parts[0] if parts else "").strip()
+    except OSError:
+        return ""
+    return ""
+
+
+def resolve_product_name():
+    """The name to show the user, host os-release first, fallback last."""
+    for path in OS_RELEASE_PATHS:
+        name = _read_pretty_name(path)
+        if name:
+            return name
+    return PRODUCT_NAME_FALLBACK
+
+
+# Resolved once at import: os-release does not change under a running
+# installer, and every page title needs the same answer.
+PRODUCT_NAME = resolve_product_name()
+
+
 def host_run(argv, **kwargs):
     """Run a command on the host, crossing the sandbox boundary if needed."""
     if IN_FLATPAK:

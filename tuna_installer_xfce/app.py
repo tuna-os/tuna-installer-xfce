@@ -65,14 +65,14 @@ class Page(Gtk.Box):
 
 
 class WelcomePage(Page):
-    title = "Welcome to TunaOS"
+    title = f"Welcome to {core.PRODUCT_NAME}"
 
     def __init__(self, win):
         super().__init__(win)
         body = Gtk.Label(xalign=0)
         body.set_line_wrap(True)
         body.set_text(
-            "This assistant installs TunaOS on this computer.\n\n"
+            f"This assistant installs {core.PRODUCT_NAME} on this computer.\n\n"
             "You'll choose what to install and where; nothing is written to "
             "any disk until you confirm on the final step.")
         self.pack_start(body, False, False, 0)
@@ -114,7 +114,7 @@ class SourcePage(Page):
         self.pack_start(scroll, True, True, 0)
 
         if self.live_ref:
-            add_radio("Install TunaOS (this system)",
+            add_radio(f"Install {core.PRODUCT_NAME} (this system)",
                       "no download required", {"live": True}, True)
 
         def sort_key(leaf):
@@ -140,7 +140,7 @@ class SourcePage(Page):
 
 
 class DestinationPage(Page):
-    title = "Where should TunaOS be installed?"
+    title = f"Where should {core.PRODUCT_NAME} be installed?"
 
     def __init__(self, win):
         super().__init__(win)
@@ -322,7 +322,7 @@ class ConfirmPage(Page):
 
 
 class ProgressPage(Page):
-    title = "Installing TunaOS"
+    title = f"Installing {core.PRODUCT_NAME}"
 
     def __init__(self, win):
         super().__init__(win)
@@ -388,7 +388,7 @@ PAGE_ORDER = ["welcome", "source", "destination", "setup", "identity",
 
 class InstallerWindow(Gtk.ApplicationWindow):
     def __init__(self, app):
-        super().__init__(application=app, title="TunaOS Installer",
+        super().__init__(application=app, title=f"{core.PRODUCT_NAME} Installer",
                          default_width=640, default_height=520)
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(outer)
