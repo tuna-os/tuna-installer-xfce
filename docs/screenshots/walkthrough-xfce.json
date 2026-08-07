@@ -1,0 +1,153 @@
+{
+  "flavor": "xfce",
+  "frames": 8,
+  "rendered_frames": 8,
+  "advanced_transitions": 7,
+  "visual_states": 8,
+  "activation_key": null,
+  "ocr": false,
+  "screens": {
+    "welcome": true,
+    "disk": false,
+    "encryption": false,
+    "summary": true,
+    "install": false,
+    "done": true
+  },
+  "strict": true,
+  "failures": 0,
+  "source": "offscreen-capture",
+  "harness": "tests/gui/capture-screens.py (GTK3 under Xvfb)",
+  "text_source": "widget-tree",
+  "screens_detail": {
+    "welcome": {
+      "required": true,
+      "reached": true,
+      "on_pages": [
+        "welcome"
+      ],
+      "matched_keywords": [
+        "welcome"
+      ]
+    },
+    "disk": {
+      "required": true,
+      "reached": false,
+      "on_pages": [],
+      "matched_keywords": []
+    },
+    "encryption": {
+      "required": false,
+      "reached": false,
+      "on_pages": [],
+      "matched_keywords": []
+    },
+    "summary": {
+      "required": true,
+      "reached": true,
+      "on_pages": [
+        "confirm"
+      ],
+      "matched_keywords": [
+        "ready to install"
+      ]
+    },
+    "install": {
+      "required": false,
+      "reached": false,
+      "on_pages": [],
+      "matched_keywords": []
+    },
+    "done": {
+      "required": false,
+      "reached": true,
+      "on_pages": [
+        "done"
+      ],
+      "matched_keywords": [
+        "complete",
+        "reboot"
+      ]
+    }
+  },
+  "pages": [
+    {
+      "name": "welcome",
+      "png": "docs/screenshots/01-welcome.png",
+      "rendered": true,
+      "colours": 230,
+      "ink": 0.011494252873563218,
+      "stddev": 0.07299814419405236
+    },
+    {
+      "name": "source",
+      "png": "docs/screenshots/02-source.png",
+      "rendered": true,
+      "colours": 268,
+      "ink": 0.009802341819744334,
+      "stddev": 0.06516969806794067
+    },
+    {
+      "name": "destination",
+      "png": "docs/screenshots/03-destination.png",
+      "rendered": true,
+      "colours": 289,
+      "ink": 0.012810183693200129,
+      "stddev": 0.07507502277664836
+    },
+    {
+      "name": "setup",
+      "png": "docs/screenshots/04-setup.png",
+      "rendered": true,
+      "colours": 289,
+      "ink": 0.009184660006445376,
+      "stddev": 0.06496653937203384
+    },
+    {
+      "name": "identity",
+      "png": "docs/screenshots/05-identity.png",
+      "rendered": true,
+      "colours": 218,
+      "ink": 0.006445375443119562,
+      "stddev": 0.05658357853676305
+    },
+    {
+      "name": "confirm",
+      "png": "docs/screenshots/06-confirm.png",
+      "rendered": true,
+      "colours": 288,
+      "ink": 0.01396498012675905,
+      "stddev": 0.07504788826303768
+    },
+    {
+      "name": "progress",
+      "png": "docs/screenshots/07-progress.png",
+      "rendered": true,
+      "colours": 301,
+      "ink": 0.0352347190890536,
+      "stddev": 0.14620655160270776
+    },
+    {
+      "name": "done",
+      "png": "docs/screenshots/08-done.png",
+      "rendered": true,
+      "colours": 197,
+      "ink": 0.006901922870340531,
+      "stddev": 0.06115457712406414
+    }
+  ],
+  "transition_pixels": [
+    9427,
+    9280,
+    10335,
+    10198,
+    12245,
+    19674,
+    23179
+  ],
+  "spec_drift": [
+    "'disk' keywords differ from upstream",
+    "'install' keywords differ from upstream"
+  ],
+  "notes": "GPU-less capture: pages are driven programmatically and text is read from the widget tree, so this reports SCREEN PARITY only. It does not measure keyboard navigation, compositor rendering, or that the frontend launches under its real desktop \u2014 those stay the VM walkthrough's job."
+}
