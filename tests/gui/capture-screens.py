@@ -81,6 +81,9 @@ from gi.repository import Gdk, GdkPixbuf, GLib, Gtk  # noqa: E402
 
 from tuna_installer_xfce import core  # noqa: E402
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import parity_report  # noqa: E402
+
 
 class _Result:
     def __init__(self, stdout): self.returncode, self.stdout, self.stderr = 0, stdout, ""
@@ -166,6 +169,33 @@ def _grab(window):
     return Gdk.pixbuf_get_from_window(gdk_window, 0, 0, width, height)
 
 
+def _page_text(widget, acc=None):
+    """Every string the page actually put in its widget tree.
+
+    This is what the parity report matches tunaOS's screen keywords against.
+    Reading the tree rather than OCRing the PNG is the whole reason this can
+    run on a GPU-less runner: no tesseract, no recognition error, and it costs
+    nothing on top of a capture we already do.
+
+    It is read from the VISIBLE page only — walking the whole window would
+    collect all eight pages' text at once and credit every screen on every
+    frame, which is precisely the false-parity failure tunaOS's spec file
+    warns about in its comments.
+    """
+    acc = [] if acc is None else acc
+    if isinstance(widget, Gtk.Label):
+        acc.append(widget.get_text() or "")
+    elif isinstance(widget, Gtk.Button):
+        acc.append(widget.get_label() or "")
+    elif isinstance(widget, Gtk.TextView):
+        buf = widget.get_buffer()
+        acc.append(buf.get_text(buf.get_start_iter(), buf.get_end_iter(), False) or "")
+    if isinstance(widget, Gtk.Container):
+        for child in widget.get_children():
+            _page_text(child, acc)
+    return acc
+
+
 def _audit(pixbuf, name):
     """Read the pixels back.
 
@@ -179,6 +209,7 @@ def _audit(pixbuf, name):
     stride, chans = pixbuf.get_rowstride(), pixbuf.get_n_channels()
     w, h = pixbuf.get_width(), pixbuf.get_height()
     counts, samples, dark = {}, 0, 0
+    luma_sum = luma_sq = 0
     for y in range(0, h, 3):
         row = y * stride
         for x in range(0, w, 3):
@@ -186,11 +217,21 @@ def _audit(pixbuf, name):
             px = (data[i], data[i + 1], data[i + 2])
             counts[px] = counts.get(px, 0) + 1
             samples += 1
-            if (30 * px[0] + 59 * px[1] + 11 * px[2]) // 100 < 160:
+            luma = (30 * px[0] + 59 * px[1] + 11 * px[2]) // 100
+            luma_sum += luma
+            luma_sq += luma * luma
+            if luma < 160:
                 dark += 1
     bg = max(counts.values()) / samples
+    # Grayscale stddev, normalised 0..1 — the same "is the screen blank"
+    # measure tunaOS's VM walkthrough takes with ImageMagick, computed here
+    # from the pixels we are already visiting. Reported, never gating: the
+    # thresholds below are this repo's and stay exactly as calibrated.
+    mean = luma_sum / samples
+    var = max(luma_sq / samples - mean * mean, 0.0)
     return {"name": name, "w": w, "h": h, "colours": len(counts),
-            "background": bg, "ink": dark / samples}
+            "background": bg, "ink": dark / samples,
+            "stddev": (var ** 0.5) / 255.0}
 
 
 def main():
@@ -229,7 +270,11 @@ def main():
             path = os.path.join(out, f"{index + 1:02d}-{name}.png")
             pixbuf.savev(path, "png", [], [])
             frames.append(path)
-            findings.append(_audit(pixbuf, name))
+            finding = _audit(pixbuf, name)
+            finding["png"] = path
+            visible = win.stack.get_visible_child()
+            finding["text"] = " ".join(_page_text(visible)) if visible else ""
+            findings.append(finding)
         win.destroy()
         app.quit()
 
@@ -255,15 +300,29 @@ def main():
         # theme, so 96% background is normal, not broken. Guessing a threshold
         # and then reading the failure as a defect is how you end up "fixing"
         # working code.
+        page_failures = []
         if f["colours"] < 60:
-            failures.append(f"{f['name']}: only {f['colours']} distinct colours — did not render")
+            page_failures.append(f"{f['name']}: only {f['colours']} distinct colours — did not render")
         if f["background"] > 0.985:
-            failures.append(f"{f['name']}: {f['background']*100:.1f}% one flat colour — blank page")
+            page_failures.append(f"{f['name']}: {f['background']*100:.1f}% one flat colour — blank page")
         if f["ink"] < 0.003:
-            failures.append(f"{f['name']}: {f['ink']*100:.2f}% ink — no text drawn")
+            page_failures.append(f"{f['name']}: {f['ink']*100:.2f}% ink — no text drawn")
+        # Same verdict, same thresholds — just also recorded per page so the
+        # parity report can say WHICH screen was blank instead of only how
+        # many were.
+        f["rendered"] = not page_failures
+        failures.extend(page_failures)
 
     if len(findings) != len(PAGE_ORDER):
         failures.append(f"captured {len(findings)} of {len(PAGE_ORDER)} pages")
+
+    # Emitted before the failure gate on purpose: a frontend that renders a
+    # blank page is exactly the case the parity matrix most needs a row for.
+    # Bailing out here would leave that frontend reading "_pending_" forever,
+    # which is how the last three defects survived.
+    parity_report.write_report(
+        out, "xfce", findings,
+        harness="tests/gui/capture-screens.py (GTK3 under Xvfb)")
 
     if failures:
         for msg in failures:
