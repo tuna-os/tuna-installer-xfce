@@ -101,6 +101,14 @@ core.host_run = _fake_host_run
 core.live_iso_image = lambda: None
 core.offline_stores = lambda: []
 
+# Product branding is resolved from the host's os-release, so an unpinned
+# capture is BRANDED BY THE RUNNER: on a GitHub ubuntu-24.04 box the wizard
+# renders "Welcome to Ubuntu 24.04.4 LTS", and the main-branch job commits
+# those PNGs into docs/. Pin it so the committed walkthrough is stable and
+# says the family name, exactly as it did before branding became dynamic.
+# On a real Skipjack ISO the same attributes read "Skipjack" instead.
+core.PRODUCT_NAME = "TunaOS"
+
 from tuna_installer_xfce.app import PAGE_ORDER, InstallerWindow  # noqa: E402
 
 # SAFETY, and not a small one. ProgressPage.on_enter() calls
