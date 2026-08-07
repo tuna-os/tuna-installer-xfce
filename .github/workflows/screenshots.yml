@@ -41,6 +41,9 @@ jobs:
       - name: capture every screen
         run: xvfb-run -a python3 tests/gui/capture-screens.py docs/screenshots
 
+      # Also carries walkthrough-xfce.json — the parity report tunaOS's
+      # installer matrix consumes (docs/INSTALLER-FRONTENDS.md). It is written
+      # into the same directory, so it needs no separate upload.
       - uses: actions/upload-artifact@v4
         # always(): the capture FAILS when a screen renders wrong, which is
         # exactly when someone needs to look at the picture. Skipping the upload
