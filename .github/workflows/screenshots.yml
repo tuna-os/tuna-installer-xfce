@@ -25,7 +25,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # python3-gi-cairo is not optional: without it every custom draw handler
       # fails with "Couldn't find foreign struct converter for 'cairo.Context'"
