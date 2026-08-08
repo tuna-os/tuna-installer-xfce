@@ -38,7 +38,17 @@ IN_FLATPAK = os.path.exists("/.flatpak-info")
 # reaching. Under a dry run the progress page plays a representative fisherman
 # transcript and completes, so those screens can finally be measured without a
 # disk anywhere near it.
-DRY_RUN = os.environ.get("TUNA_INSTALLER_DRY_RUN", "") not in ("", "0")
+# Read at CALL time, not import time, and deliberately so.
+#
+# This was a module-level constant on the first attempt and the capture job
+# caught it immediately: capture-screens.py imports core near the top to stub
+# host_run, then set the env var further down, so the constant had already been
+# evaluated as False and the guard refused to run. An import-time read makes
+# the interlock depend on module import ORDER, which is an invisible property
+# no caller can see and every new caller can get wrong — a poor foundation for
+# the one check standing between a test harness and a partitioned disk.
+def dry_run():
+    return os.environ.get("TUNA_INSTALLER_DRY_RUN", "") not in ("", "0")
 
 # One line per fisherman step, in fisherman's own "[n/9] " prefix format so
 # ProgressPage.append_log's step parser drives the bar exactly as it would on a

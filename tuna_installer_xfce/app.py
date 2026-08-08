@@ -512,10 +512,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
     def start_install(self, progress_page):
         # The interlock comes FIRST, before the recipe is even written. See
-        # core.DRY_RUN: navigating to the progress page calls straight into
+        # core.dry_run(): navigating to the progress page calls straight into
         # here with no confirmation in between, so this is the last line of
         # defence for anything driving the real binary.
-        if core.DRY_RUN:
+        if core.dry_run():
             self._start_dry_run(progress_page)
             return
 
