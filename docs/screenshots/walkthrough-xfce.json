@@ -2,8 +2,8 @@
   "flavor": "xfce",
   "frames": 8,
   "rendered_frames": 8,
-  "advanced_transitions": 6,
-  "visual_states": 7,
+  "advanced_transitions": 7,
+  "visual_states": 8,
   "activation_key": null,
   "ocr": false,
   "screens": {
@@ -100,59 +100,59 @@
       "name": "destination",
       "png": "docs/screenshots/03-destination.png",
       "rendered": true,
-      "colours": 273,
-      "ink": 0.010070899129874316,
-      "stddev": 0.06584917330428677
+      "colours": 296,
+      "ink": 0.01307874100333011,
+      "stddev": 0.07565133158603748
     },
     {
       "name": "setup",
       "png": "docs/screenshots/04-setup.png",
       "rendered": true,
-      "colours": 298,
+      "colours": 299,
       "ink": 0.009453217316575358,
-      "stddev": 0.06563469370213976
+      "stddev": 0.06564175939202418
     },
     {
       "name": "identity",
       "png": "docs/screenshots/05-identity.png",
       "rendered": true,
-      "colours": 229,
-      "ink": 0.0066870770222365455,
-      "stddev": 0.05731543635605536
+      "colours": 232,
+      "ink": 0.006713932753249543,
+      "stddev": 0.05734329622575838
     },
     {
       "name": "confirm",
       "png": "docs/screenshots/06-confirm.png",
       "rendered": true,
-      "colours": 299,
+      "colours": 296,
       "ink": 0.014072403050811044,
-      "stddev": 0.07514212455482917
+      "stddev": 0.07517180376484736
     },
     {
       "name": "progress",
       "png": "docs/screenshots/07-progress.png",
       "rendered": true,
-      "colours": 302,
+      "colours": 301,
       "ink": 0.0352347190890536,
-      "stddev": 0.14618278702915505
+      "stddev": 0.14620655160270776
     },
     {
       "name": "done",
       "png": "docs/screenshots/08-done.png",
       "rendered": true,
-      "colours": 201,
+      "colours": 198,
       "ink": 0.006901922870340531,
-      "stddev": 0.06117875787896709
+      "stddev": 0.061245670178639786
     }
   ],
   "transition_pixels": [
     9474,
-    0,
-    8686,
+    9280,
+    10335,
     10198,
-    12236,
-    19653,
-    23158
+    12235,
+    19662,
+    23139
   ],
   "spec_drift": [
     "'install' keywords differ from upstream"
