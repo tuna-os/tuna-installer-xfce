@@ -73,6 +73,24 @@ os.environ["FISHERMAN_IMAGES_PATH"] = _catalog_path
 os.environ.setdefault("XDG_RUNTIME_DIR", _tmp)
 os.environ.setdefault("GTK_A11Y", "none")
 
+# SAFETY, and not a small one. ProgressPage.on_enter() calls
+# win.start_install(), so simply navigating the wizard to the progress page
+# LAUNCHES A REAL INSTALL — there is no confirmation between the two. A capture
+# script that drove pages the obvious way would try to partition the runner's
+# disk.
+#
+# This used to be `InstallerWindow.start_install = lambda self, page: None`,
+# applied before any page was shown. That protected THIS script and nothing
+# else: a monkeypatch in one test file is invisible to anything driving the
+# real binary, which is exactly what the live-ISO walkthrough harness in
+# tuna-os/tunaOS does over a QEMU keyboard with no ability to patch anything.
+#
+# The interlock now lives in the app (core.DRY_RUN, honoured as the first
+# statement of start_install), so it protects every caller. It has to be set
+# here, before `tuna_installer_xfce.core` is imported below, because DRY_RUN is
+# read once at core's import time.
+os.environ.setdefault("TUNA_INSTALLER_DRY_RUN", "1")
+
 import gi  # noqa: E402
 
 gi.require_version("Gtk", "3.0")
@@ -109,23 +127,6 @@ core.offline_stores = lambda: []
 # On a real Skipjack ISO the same attributes read "Skipjack" instead.
 core.PRODUCT_NAME = "TunaOS"
 
-# SAFETY, and not a small one. ProgressPage.on_enter() calls
-# win.start_install(), so simply navigating the wizard to the progress page
-# LAUNCHES A REAL INSTALL — there is no confirmation between the two. A capture
-# script that drove pages the obvious way would try to partition the runner's
-# disk.
-#
-# This used to be `InstallerWindow.start_install = lambda self, page: None`,
-# applied here before any page was shown. That protected THIS script and
-# nothing else: a monkeypatch in one test file is invisible to anything driving
-# the real binary, which is exactly what the live-ISO walkthrough harness in
-# tuna-os/tunaOS does over a QEMU keyboard with no ability to patch anything.
-#
-# The interlock now lives in the app (core.DRY_RUN, honoured as the first
-# statement of start_install), so it protects every caller. Set before the app
-# module is imported, because DRY_RUN is read at import time.
-os.environ.setdefault("TUNA_INSTALLER_DRY_RUN", "1")
-
 from tuna_installer_xfce.app import PAGE_ORDER, InstallerWindow  # noqa: E402,F401
 
 # Guard on the guard, in the spirit of tuna-installer-cosmic's
@@ -137,8 +138,8 @@ if not core.DRY_RUN:
     sys.exit(
         "refusing to run: core.DRY_RUN is False, so navigating to the progress "
         "page would start a REAL install. TUNA_INSTALLER_DRY_RUN is set at the "
-        "top of this file; if core no longer honours it, fix the interlock "
-        "rather than this check."
+        "top of this file, before core is imported; if core no longer honours "
+        "it, fix the interlock rather than this check."
     )
 
 CAPTIONS = {
