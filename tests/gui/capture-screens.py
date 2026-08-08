@@ -22,6 +22,15 @@ import tempfile
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, REPO)
 
+# SAFETY INTERLOCK — set before ANY tuna_installer_xfce import, and first
+# because this is the one line whose absence costs a disk rather than a
+# screenshot. ProgressPage.on_enter() calls win.start_install() with no
+# confirmation in between, so navigating this wizard to the progress page runs
+# fisherman as root. core.dry_run() makes that a no-op that plays a transcript
+# instead; the full reasoning is in tuna_installer_xfce/core.py, and the check
+# that this actually took effect is further down.
+os.environ.setdefault("TUNA_INSTALLER_DRY_RUN", "1")
+
 # ── fixtures, installed BEFORE the app imports anything ──────────────────────
 
 CATALOG = {
@@ -73,6 +82,24 @@ os.environ["FISHERMAN_IMAGES_PATH"] = _catalog_path
 os.environ.setdefault("XDG_RUNTIME_DIR", _tmp)
 os.environ.setdefault("GTK_A11Y", "none")
 
+# SAFETY, and not a small one. ProgressPage.on_enter() calls
+# win.start_install(), so simply navigating the wizard to the progress page
+# LAUNCHES A REAL INSTALL — there is no confirmation between the two. A capture
+# script that drove pages the obvious way would try to partition the runner's
+# disk.
+#
+# This used to be `InstallerWindow.start_install = lambda self, page: None`,
+# applied before any page was shown. That protected THIS script and nothing
+# else: a monkeypatch in one test file is invisible to anything driving the
+# real binary, which is exactly what the live-ISO walkthrough harness in
+# tuna-os/tunaOS does over a QEMU keyboard with no ability to patch anything.
+#
+# The interlock now lives in the app (core.dry_run(), honoured as the first
+# statement of start_install), so it protects every caller. It is read at CALL
+# time, so import order cannot defeat it — but the assignment stays up here
+# above every import anyway, because the cost of being wrong about this is a
+# disk rather than a screenshot.
+
 import gi  # noqa: E402
 
 gi.require_version("Gtk", "3.0")
@@ -109,15 +136,28 @@ core.offline_stores = lambda: []
 # On a real Skipjack ISO the same attributes read "Skipjack" instead.
 core.PRODUCT_NAME = "TunaOS"
 
-from tuna_installer_xfce.app import PAGE_ORDER, InstallerWindow  # noqa: E402
+from tuna_installer_xfce.app import PAGE_ORDER, InstallerWindow  # noqa: E402,F401
 
-# SAFETY, and not a small one. ProgressPage.on_enter() calls
-# win.start_install(), so simply navigating the wizard to the progress page
-# LAUNCHES A REAL INSTALL. A capture script that drove pages the obvious way
-# would try to partition the CI runner's disk. Neutralised before any page is
-# shown; the progress screen is then populated with fixture log lines so the
-# screenshot still shows something representative.
-InstallerWindow.start_install = lambda self, page: None
+# Guard on the guard, in the spirit of tuna-installer-cosmic's
+# TUNA_BLANK_SELFTEST. The whole safety of this script rests on one check in
+# another module, and the failure mode if it silently stops being read is not a
+# broken screenshot — it is a partitioned runner disk. So refuse to show a
+# single page unless the interlock is demonstrably live.
+#
+# It has already earned its keep: on the first attempt this fired in CI (run
+# 31271258293) because the env var was set HERE, below the `from
+# tuna_installer_xfce import core` above, while core evaluated it at import
+# time. The guard turned an ordering mistake into a failed job instead of an
+# install. core.dry_run() is now read at call time so that ordering cannot
+# matter, and the assignment moved to the top of the file so it does not
+# matter twice.
+if not core.dry_run():
+    sys.exit(
+        "refusing to run: core.dry_run() is False, so navigating to the "
+        "progress page would start a REAL install. TUNA_INSTALLER_DRY_RUN is "
+        "set at the top of this file; if core no longer honours it, fix the "
+        "interlock rather than this check."
+    )
 
 CAPTIONS = {
     "welcome": "What the assistant is about to do.",

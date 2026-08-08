@@ -511,6 +511,14 @@ class InstallerWindow(Gtk.ApplicationWindow):
     # --- install ---------------------------------------------------------
 
     def start_install(self, progress_page):
+        # The interlock comes FIRST, before the recipe is even written. See
+        # core.dry_run(): navigating to the progress page calls straight into
+        # here with no confirmation in between, so this is the last line of
+        # defence for anything driving the real binary.
+        if core.dry_run():
+            self._start_dry_run(progress_page)
+            return
+
         recipe_path = core.write_recipe(self.build_recipe())
         argv = core.fisherman_argv(recipe_path)
         self._log_tail = []
@@ -523,6 +531,38 @@ class InstallerWindow(Gtk.ApplicationWindow):
             GLib.io_add_watch(ch, GLib.IO_IN | GLib.IO_HUP,
                               self._on_output, progress_page)
         GLib.child_watch_add(pid, self._on_exit, recipe_path)
+
+    def _start_dry_run(self, progress_page):
+        """Play a fisherman transcript through the real progress page.
+
+        Deliberately routed through append_log() and _on_exit()'s tail of the
+        real path rather than setting the widgets directly: what a harness
+        photographs here is then the same code that runs a real install,
+        including the "[n/9]" step parsing that drives the bar. A dry run that
+        painted its own screens would prove those screens render and nothing
+        about whether the install path renders them.
+        """
+        self._log_tail = []
+
+        # Timed rather than instant, for two reasons. A wizard that jumps from
+        # confirm to done in one frame gives a screenshot harness no progress
+        # page to capture at all — and `install` is one of the screens this
+        # whole interlock exists to make measurable. It also keeps the GTK main
+        # loop live, so a driver stepping the UI is exercising the same
+        # idle/redraw path a real install has.
+        lines = list(core.DRY_RUN_TRANSCRIPT)
+
+        def pump():
+            if not lines:
+                self.pages["done"].set_result(True, "".join(self._log_tail))
+                self._enter(PAGE_ORDER.index("done"))
+                return False
+            text = lines.pop(0)
+            self._log_tail = (self._log_tail + [text])[-15:]
+            progress_page.append_log(text)
+            return True
+
+        GLib.timeout_add(400, pump)
 
     def _on_output(self, channel, cond, page):
         if cond & GLib.IO_IN:
