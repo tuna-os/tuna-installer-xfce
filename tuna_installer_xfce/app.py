@@ -10,7 +10,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk, Pango
 
-from . import core
+from . import core, readiness
 from .trawlline import TrawlLine
 
 HOSTNAME_RE = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$")
@@ -589,6 +589,19 @@ class InstallerApp(Gtk.Application):
 
     def do_activate(self):
         win = self.get_active_window() or InstallerWindow(self)
+
+        # Record that a window actually MAPPED, and which page it was showing.
+        #
+        # tunaOS's installer-smoke.yml proves this frontend is up with
+        # `flatpak ps` — "is the process alive", which is a different question
+        # from "did the user get a window". They have already diverged: the
+        # COSMIC leg ran the process with no window ever appearing and the
+        # check stayed green. See readiness.py.
+        #
+        # page_getter is passed rather than a page value so the stamp reports
+        # what is on screen at map time, not at connect time.
+        readiness.arm(win, page_getter=lambda: PAGE_ORDER[win.index])
+
         win.present()
 
 
