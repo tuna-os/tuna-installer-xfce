@@ -9,6 +9,56 @@ import tempfile
 
 IN_FLATPAK = os.path.exists("/.flatpak-info")
 
+# Dry run: the wizard behaves normally but NEVER launches fisherman.
+#
+# This exists because reaching the progress page is not a neutral act here.
+# ProgressPage.on_enter() calls win.start_install(), so merely NAVIGATING to
+# that page partitions a disk — there is no confirmation between the two. Any
+# harness that drives this wizard the obvious way destroys the machine it runs
+# on, and tests/gui/capture-screens.py has been working around exactly that by
+# monkeypatching InstallerWindow.start_install to a no-op before showing a
+# single page.
+#
+# A monkeypatch in one test script is not a safety property. It protects only
+# the callers that remember to apply it, and it is invisible to anything
+# driving the real binary — which is precisely what the live-ISO walkthrough
+# harness in tuna-os/tunaOS does, over a QEMU keyboard, with no ability to
+# patch anything. The interlock has to live in the app.
+#
+# So it does, and it follows the siblings: tuna-installer-cosmic refuses
+# Message::StartInstall outright while TUNA_CAPTURE_DIR is set
+# (src/capture.rs), and tuna-installer-kde drives its progress page through
+# loadDemoState() rather than a real install. This is the same idea with the
+# env var named for what it does rather than for the harness that wanted it.
+#
+# It is deliberately NOT just a refusal. A harness that reaches the progress
+# page and sees nothing cannot tell "install suppressed" from "install
+# crashed", and the `install` and `done` screens are two of the six in the
+# tunaOS screen contract that no frontend has ever been credited with
+# reaching. Under a dry run the progress page plays a representative fisherman
+# transcript and completes, so those screens can finally be measured without a
+# disk anywhere near it.
+DRY_RUN = os.environ.get("TUNA_INSTALLER_DRY_RUN", "") not in ("", "0")
+
+# One line per fisherman step, in fisherman's own "[n/9] " prefix format so
+# ProgressPage.append_log's step parser drives the bar exactly as it would on a
+# real install. The wording tracks fisherman's actual step names; if they
+# drift, the tunaOS screen contract (tests/installer-screens.yaml, which keys
+# the `install` screen off "partitioning" and "installing image") is what will
+# notice.
+DRY_RUN_TRANSCRIPT = [
+    "[1/9] Partitioning /dev/vda\n",
+    "[2/9] Creating filesystems\n",
+    "[3/9] Mounting target\n",
+    "[4/9] Installing image\n",
+    "[5/9] Configuring bootloader\n",
+    "[6/9] Writing fstab\n",
+    "[7/9] Installing flatpaks\n",
+    "[8/9] Running post-install hooks\n",
+    "[9/9] Finalizing\n",
+    "Install complete (dry run — no disk was written)\n",
+]
+
 # Flatpak runtimes ship no pkexec; escalate host-side. The live ISO symlinks
 # the flatpak-bundled fisherman to /usr/local/bin and installs the polkit
 # policy for it (tunaOS customize-live.sh).

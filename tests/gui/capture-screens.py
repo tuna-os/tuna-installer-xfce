@@ -109,15 +109,37 @@ core.offline_stores = lambda: []
 # On a real Skipjack ISO the same attributes read "Skipjack" instead.
 core.PRODUCT_NAME = "TunaOS"
 
-from tuna_installer_xfce.app import PAGE_ORDER, InstallerWindow  # noqa: E402
-
 # SAFETY, and not a small one. ProgressPage.on_enter() calls
 # win.start_install(), so simply navigating the wizard to the progress page
-# LAUNCHES A REAL INSTALL. A capture script that drove pages the obvious way
-# would try to partition the CI runner's disk. Neutralised before any page is
-# shown; the progress screen is then populated with fixture log lines so the
-# screenshot still shows something representative.
-InstallerWindow.start_install = lambda self, page: None
+# LAUNCHES A REAL INSTALL — there is no confirmation between the two. A capture
+# script that drove pages the obvious way would try to partition the runner's
+# disk.
+#
+# This used to be `InstallerWindow.start_install = lambda self, page: None`,
+# applied here before any page was shown. That protected THIS script and
+# nothing else: a monkeypatch in one test file is invisible to anything driving
+# the real binary, which is exactly what the live-ISO walkthrough harness in
+# tuna-os/tunaOS does over a QEMU keyboard with no ability to patch anything.
+#
+# The interlock now lives in the app (core.DRY_RUN, honoured as the first
+# statement of start_install), so it protects every caller. Set before the app
+# module is imported, because DRY_RUN is read at import time.
+os.environ.setdefault("TUNA_INSTALLER_DRY_RUN", "1")
+
+from tuna_installer_xfce.app import PAGE_ORDER, InstallerWindow  # noqa: E402,F401
+
+# Guard on the guard, in the spirit of tuna-installer-cosmic's
+# TUNA_BLANK_SELFTEST. The whole safety of this script now rests on one boolean
+# in another module, and the failure mode if it silently stops being read is
+# not a broken screenshot — it is a partitioned runner disk. So refuse to show
+# a single page unless the interlock is demonstrably live.
+if not core.DRY_RUN:
+    sys.exit(
+        "refusing to run: core.DRY_RUN is False, so navigating to the progress "
+        "page would start a REAL install. TUNA_INSTALLER_DRY_RUN is set at the "
+        "top of this file; if core no longer honours it, fix the interlock "
+        "rather than this check."
+    )
 
 CAPTIONS = {
     "welcome": "What the assistant is about to do.",
