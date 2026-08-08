@@ -2,8 +2,8 @@
   "flavor": "xfce",
   "frames": 8,
   "rendered_frames": 8,
-  "advanced_transitions": 7,
-  "visual_states": 8,
+  "advanced_transitions": 6,
+  "visual_states": 7,
   "activation_key": null,
   "ocr": false,
   "screens": {
@@ -86,47 +86,47 @@
       "rendered": true,
       "colours": 229,
       "ink": 0.011494252873563218,
-      "stddev": 0.07299736223082047
+      "stddev": 0.07301352336325512
     },
     {
       "name": "source",
       "png": "docs/screenshots/02-source.png",
       "rendered": true,
-      "colours": 278,
+      "colours": 273,
       "ink": 0.010070899129874316,
-      "stddev": 0.06583128402388375
+      "stddev": 0.06584917330428677
     },
     {
       "name": "destination",
       "png": "docs/screenshots/03-destination.png",
       "rendered": true,
-      "colours": 295,
-      "ink": 0.01307874100333011,
-      "stddev": 0.07563548756310623
+      "colours": 273,
+      "ink": 0.010070899129874316,
+      "stddev": 0.06584917330428677
     },
     {
       "name": "setup",
       "png": "docs/screenshots/04-setup.png",
       "rendered": true,
-      "colours": 296,
+      "colours": 298,
       "ink": 0.009453217316575358,
-      "stddev": 0.0656330884258133
+      "stddev": 0.06563469370213976
     },
     {
       "name": "identity",
       "png": "docs/screenshots/05-identity.png",
       "rendered": true,
-      "colours": 225,
-      "ink": 0.006713932753249543,
-      "stddev": 0.05738214560787408
+      "colours": 229,
+      "ink": 0.0066870770222365455,
+      "stddev": 0.05731543635605536
     },
     {
       "name": "confirm",
       "png": "docs/screenshots/06-confirm.png",
       "rendered": true,
-      "colours": 302,
+      "colours": 299,
       "ink": 0.014072403050811044,
-      "stddev": 0.07522187022099072
+      "stddev": 0.07514212455482917
     },
     {
       "name": "progress",
@@ -134,25 +134,25 @@
       "rendered": true,
       "colours": 302,
       "ink": 0.0352347190890536,
-      "stddev": 0.14620599688462704
+      "stddev": 0.14618278702915505
     },
     {
       "name": "done",
       "png": "docs/screenshots/08-done.png",
       "rendered": true,
-      "colours": 195,
-      "ink": 0.0068750671393275325,
-      "stddev": 0.0611474277234599
+      "colours": 201,
+      "ink": 0.006901922870340531,
+      "stddev": 0.06117875787896709
     }
   ],
   "transition_pixels": [
-    9468,
-    9280,
-    10335,
+    9474,
+    0,
+    8686,
     10198,
-    12226,
-    19619,
-    23224
+    12236,
+    19653,
+    23158
   ],
   "spec_drift": [
     "'install' keywords differ from upstream"
