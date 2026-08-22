@@ -1,7 +1,7 @@
 # tuna-installer-xfce — Design
 
 GTK3 (Python/PyGObject) frontend for XFCE. Shared flow/contract:
-`../INSTALLER-FRONTENDS.md`.
+[tunaOS installer frontend contract](https://github.com/tuna-os/tunaos/blob/main/docs/INSTALLER-FRONTENDS.md).
 
 ## Direction
 
@@ -61,12 +61,12 @@ log view. Page titles: `<big><b>` markup, nothing more.
 └────────────────────────────────────────────────────────┘
 ```
 
-- 620×480 default, resizable, everything reachable at 800×600.
+- 640×520 default, resizable, everything reachable at 800×600.
 - Standard 12 px GNOME-2-era spacing, `GtkRadioButton` rows for disks
   (visible radios — XFCE users prefer explicit controls over selection
   highlights).
 - Advanced options live behind a `GtkExpander` ("Advanced"), collapsed by
-  default: filesystem choice, btrfs subvolumes, ZFS pool name.
+  default: filesystem choice and btrfs subvolumes.
 - Progress page: `GtkProgressBar` (9 steps mapped), current-step label, and a
   *visible by default* mono `GtkTextView` log — XFCE users want to see the
   output, don't hide it.
