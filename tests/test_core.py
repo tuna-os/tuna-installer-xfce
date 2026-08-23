@@ -161,6 +161,129 @@ class TestHumanSize:
         assert core.human_size(nbytes) == expected
 
 
+# ─── recipe building ─────────────────────────────────────────────────────────
+#
+# These cover the conditionals that used to sit inside
+# InstallerWindow.build_recipe, where reaching them meant constructing a GTK
+# window. The recipe is the contract with fisherman, so the interesting cases
+# are the ones where a key must be ABSENT — an empty value and a missing key
+# do not mean the same thing to the backend.
+
+MINIMAL = dict(disk="/dev/vda", filesystem="xfs")
+
+
+class TestBuildRecipe:
+    def test_minimal_recipe_has_the_fixed_fields(self):
+        r = core.build_recipe(**MINIMAL, hostname="tunaos")
+        assert r["disk"] == "/dev/vda"
+        assert r["filesystem"] == "xfs"
+        assert r["hostname"] == "tunaos"
+        assert r["distroID"] == "tunaos"
+        assert r["selinuxDisabled"] is True
+        assert r["encryption"] == {"type": "none"}
+
+    def test_optional_keys_are_absent_not_empty(self):
+        r = core.build_recipe(**MINIMAL)
+        for key in ("bootloader", "composeFsBackend", "flatpaks",
+                    "additionalImageStores", "user"):
+            assert key not in r, f"{key} must be omitted, not emitted empty"
+
+    # --- btrfs subvolumes ---
+
+    def test_subvolumes_honoured_on_btrfs(self):
+        r = core.build_recipe(disk="/dev/vda", filesystem="btrfs",
+                              btrfs_subvolumes=True)
+        assert r["btrfsSubvolumes"] is True
+
+    def test_subvolumes_ignored_off_btrfs(self):
+        """The Advanced checkbox keeps its state when the filesystem changes."""
+        r = core.build_recipe(disk="/dev/vda", filesystem="xfs",
+                              btrfs_subvolumes=True)
+        assert r["btrfsSubvolumes"] is False
+
+    # --- encryption ---
+
+    def test_passphrase_emitted_for_a_passphrase_type(self):
+        r = core.build_recipe(**MINIMAL, encryption_type="luks-passphrase",
+                              passphrase="hunter2")
+        assert r["encryption"] == {"type": "luks-passphrase",
+                                   "passphrase": "hunter2"}
+
+    def test_passphrase_never_leaks_into_an_unencrypted_recipe(self):
+        """A stale entry in the box must not reach the backend."""
+        r = core.build_recipe(**MINIMAL, encryption_type="none",
+                              passphrase="left-over")
+        assert "passphrase" not in r["encryption"]
+
+    def test_tpm_only_takes_no_passphrase(self):
+        """`tpm2-luks` unlocks from the TPM alone — see ENCRYPTION_CHOICES."""
+        r = core.build_recipe(**MINIMAL, encryption_type="tpm2-luks",
+                              passphrase="left-over")
+        assert r["encryption"] == {"type": "tpm2-luks"}
+
+    def test_tpm_plus_passphrase_carries_the_fallback(self):
+        """`tpm2-luks-passphrase` is TPM unlock with a passphrase fallback, so
+        the passphrase must survive. This is why the check is a substring test
+        and not equality against 'luks-passphrase'."""
+        r = core.build_recipe(**MINIMAL, encryption_type="tpm2-luks-passphrase",
+                              passphrase="fallback")
+        assert r["encryption"] == {"type": "tpm2-luks-passphrase",
+                                   "passphrase": "fallback"}
+
+    # --- catalog leaf properties ---
+
+    def test_bootloader_and_composefs_passed_through(self):
+        r = core.build_recipe(**MINIMAL, bootloader="systemd-boot",
+                              composefs=True)
+        assert r["bootloader"] == "systemd-boot"
+        assert r["composeFsBackend"] is True
+
+    def test_flatpaks_split_into_a_list(self):
+        r = core.build_recipe(**MINIMAL, flatpaks="org.gnome.Loupe org.gnome.Calculator")
+        assert r["flatpaks"] == ["org.gnome.Loupe", "org.gnome.Calculator"]
+
+    def test_catalog_reference_is_not_a_package_list(self):
+        """A leading @ names another catalog entry — passing it verbatim would
+        ask fisherman to install a flatpak called '@desktop'."""
+        r = core.build_recipe(**MINIMAL, flatpaks="@desktop")
+        assert "flatpaks" not in r
+
+    # --- offline stores ---
+
+    def test_stores_passed_when_detected(self):
+        r = core.build_recipe(**MINIMAL, stores=["/run/media/iso/containers"])
+        assert r["additionalImageStores"] == ["/run/media/iso/containers"]
+
+    # --- user block ---
+
+    def test_user_block_built_when_the_image_needs_one(self):
+        r = core.build_recipe(**MINIMAL, needs_user=True, username="jo",
+                              fullname="Jo Fish", password="pw")
+        assert r["user"] == {"username": "jo", "fullname": "Jo Fish",
+                             "password": "pw", "groups": ["wheel"]}
+
+    def test_no_user_block_when_the_image_creates_its_own(self):
+        """The image runs its own first-boot setup; a second user would be
+        created behind the user's back."""
+        r = core.build_recipe(**MINIMAL, needs_user=False, username="jo",
+                              password="pw")
+        assert "user" not in r
+
+    def test_no_user_block_without_a_username(self):
+        r = core.build_recipe(**MINIMAL, needs_user=True, username="",
+                              password="pw")
+        assert "user" not in r
+
+    # --- round trip ---
+
+    def test_recipe_survives_write_recipe(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
+        built = core.build_recipe(**MINIMAL, encryption_type="luks-passphrase",
+                                  passphrase="pw", stores=["/a"],
+                                  needs_user=True, username="jo")
+        assert json.load(open(core.write_recipe(built))) == built
+
+
 # ─── recipe writing ──────────────────────────────────────────────────────────
 
 class TestWriteRecipe:

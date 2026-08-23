@@ -281,6 +281,68 @@ def human_size(nbytes):
 
 # --- recipe -------------------------------------------------------------------
 
+def build_recipe(*, disk, filesystem, btrfs_subvolumes=False,
+                 encryption_type="none", passphrase="", image="",
+                 hostname="", bootloader="", composefs=False, flatpaks="",
+                 stores=(), needs_user=True, username="", fullname="",
+                 password=""):
+    """Assemble the fisherman recipe from already-resolved values.
+
+    This is the contract with the install backend — the same document the KDE,
+    COSMIC and Niri forks each build their own way (tuna-os/tunaOS#1197) — so
+    it is the one piece of this frontend most worth being able to test without
+    a display. It used to live in `InstallerWindow.build_recipe`, reading
+    `Gtk.Entry.get_text()` and `Gtk.CheckButton.get_active()` inline, which
+    made every conditional below reachable only by constructing a GTK window.
+
+    Callers pass plain values; the widget layer stays responsible for reading
+    them off the pages. The conditionals are the ones that were in the method,
+    unchanged:
+
+      * `btrfsSubvolumes` is only meaningful on btrfs, and is False elsewhere
+        regardless of what the Advanced checkbox says.
+      * The passphrase is only emitted for an encryption type that takes one,
+        so a stale entry left in the box cannot leak into a recipe for an
+        unencrypted install.
+      * `bootloader`, `composeFsBackend` and `flatpaks` are catalog-leaf
+        properties: absent keys mean "let fisherman decide", which is not the
+        same as an empty value.
+      * A `@`-prefixed flatpaks field is a catalog reference, not a package
+        list, and is not passed through.
+      * The user block is omitted entirely when the image creates its own
+        first user, or when no username was typed.
+    """
+    recipe = {
+        "disk": disk,
+        "filesystem": filesystem,
+        "btrfsSubvolumes": filesystem == "btrfs" and btrfs_subvolumes,
+        "encryption": {"type": encryption_type},
+        "image": image,
+        "selinuxDisabled": True,
+        "hostname": hostname,
+        "distroID": "tunaos",
+    }
+    if "passphrase" in encryption_type:
+        recipe["encryption"]["passphrase"] = passphrase
+    if bootloader:
+        recipe["bootloader"] = bootloader
+    if composefs:
+        recipe["composeFsBackend"] = True
+    if flatpaks and not flatpaks.startswith("@"):
+        recipe["flatpaks"] = flatpaks.split()
+    # Always pass detected stores; fisherman ignores unhelpful ones (§4B).
+    if stores:
+        recipe["additionalImageStores"] = stores
+    if needs_user and username:
+        recipe["user"] = {
+            "username": username,
+            "fullname": fullname,
+            "password": password,
+            "groups": ["wheel"],
+        }
+    return recipe
+
+
 def write_recipe(recipe):
     """Write the recipe 0600 in a fresh private directory; return its path.
 
