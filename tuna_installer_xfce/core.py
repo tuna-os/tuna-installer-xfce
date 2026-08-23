@@ -282,18 +282,45 @@ def human_size(nbytes):
 # --- recipe -------------------------------------------------------------------
 
 def write_recipe(recipe):
-    """Write the recipe 0600 under XDG_RUNTIME_DIR; return its path.
+    """Write the recipe 0600 in a fresh private directory; return its path.
 
     The recipe may hold a LUKS passphrase and a user password — never put it
-    somewhere world-readable."""
+    somewhere world-readable.
+
+    The DIRECTORY matters as much as the file mode here. This used to create a
+    fixed `<base>/tuna-installer` with `exist_ok=True`, and when
+    XDG_RUNTIME_DIR is unset — the default under `sudo` (env_reset strips it),
+    from a TTY, and from any launcher that is not a logind session — `base` is
+    /tmp, so the path was the constant `/tmp/tuna-installer`. `makedirs` with
+    `exist_ok=True` applies its `mode` only when it actually creates the
+    directory: a pre-existing 0777 directory was accepted as-is, handing an
+    unprivileged local user ownership of the directory every recipe lands in.
+
+    mkstemp kept the file itself unpredictable and 0600, so the passphrase was
+    never directly readable. The exposure was control of the PATH, and the path
+    is what gets handed to root: `fisherman_argv()` passes it to
+    sudo/pkexec fisherman. Owning the directory means unlinking our recipe and
+    dropping a different one at the same name in the window before fisherman
+    opens it — root then installs an attacker-chosen image, onto an
+    attacker-chosen disk, with encryption turned off and a known user password.
+
+    mkdtemp closes that: it creates a 0700 directory with an unpredictable name
+    and O_EXCL semantics, so it cannot be pre-created and its mode cannot be
+    inherited from someone else's. Callers should remove the returned file's
+    directory (see `recipe_dir`) once fisherman has exited.
+    """
     base = os.environ.get("XDG_RUNTIME_DIR") or tempfile.gettempdir()
-    rundir = os.path.join(base, "tuna-installer")
-    os.makedirs(rundir, mode=0o700, exist_ok=True)
+    rundir = tempfile.mkdtemp(prefix="tuna-installer-", dir=base)
     fd, path = tempfile.mkstemp(dir=rundir, suffix=".json")
     with os.fdopen(fd, "w") as f:
         json.dump(recipe, f, indent=2)
     os.chmod(path, 0o600)
     return path
+
+
+def recipe_dir(recipe_path):
+    """The private directory `write_recipe` created for `recipe_path`."""
+    return os.path.dirname(recipe_path)
 
 
 def fisherman_argv(recipe_path):
