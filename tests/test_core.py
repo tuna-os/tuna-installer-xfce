@@ -168,7 +168,7 @@ class TestWriteRecipe:
         import stat
         monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
         path = core.write_recipe({"image": "localhost/foo:1"})
-        assert path.startswith(str(tmp_path / "tuna-installer"))
+        assert path.startswith(str(tmp_path / "tuna-installer-"))
         mode = stat.S_IMODE(os.stat(path).st_mode)
         assert mode == 0o600, f"recipe must be 0600, got {oct(mode)}"
         assert json.load(open(path)) == {"image": "localhost/foo:1"}
@@ -179,6 +179,39 @@ class TestWriteRecipe:
         path = core.write_recipe({"x": 1})
         assert json.load(open(path)) == {"x": 1}
         assert stat.S_IMODE(os.stat(path).st_mode) == 0o600
+
+    def test_directory_is_private(self, tmp_path, monkeypatch):
+        """0700, so nobody else can enumerate or replace the recipe.
+
+        The file mode was never the weak part — mkstemp already gave an
+        unpredictable 0600 file. The directory was: a fixed
+        <base>/tuna-installer created with exist_ok=True inherited whatever
+        mode a pre-existing directory had, and the path is what gets handed
+        to root's fisherman."""
+        import stat
+        monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
+        rundir = core.recipe_dir(core.write_recipe({"x": 1}))
+        assert stat.S_IMODE(os.stat(rundir).st_mode) == 0o700
+
+    def test_directory_is_not_reused(self, tmp_path, monkeypatch):
+        """A fresh directory per call — never a fixed name a local user can
+        pre-create and then own."""
+        monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
+        first = core.recipe_dir(core.write_recipe({"x": 1}))
+        second = core.recipe_dir(core.write_recipe({"x": 2}))
+        assert first != second
+        assert not os.path.exists(tmp_path / "tuna-installer")
+
+    def test_precreated_world_writable_dir_is_not_adopted(self, tmp_path, monkeypatch):
+        """The old code accepted a pre-existing 0777 <base>/tuna-installer."""
+        import stat
+        monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
+        hostile = tmp_path / "tuna-installer"
+        hostile.mkdir(mode=0o777)
+        os.chmod(hostile, 0o777)  # defeat the umask
+        rundir = core.recipe_dir(core.write_recipe({"x": 1}))
+        assert rundir != str(hostile)
+        assert stat.S_IMODE(os.stat(rundir).st_mode) == 0o700
 
 
 # ─── fisherman invocation ────────────────────────────────────────────────────

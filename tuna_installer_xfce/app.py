@@ -3,6 +3,7 @@ Flow and recipe contract: ../../INSTALLER-FRONTENDS.md."""
 
 import os
 import re
+import shutil
 import signal
 
 import gi
@@ -574,10 +575,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
 
     def _on_exit(self, pid, status, recipe_path):
         GLib.spawn_close_pid(pid)
-        try:
-            os.unlink(recipe_path)  # recipe may hold secrets — remove promptly
-        except OSError:
-            pass
+        # The recipe may hold secrets — remove it promptly, and take the
+        # private directory write_recipe made for it with it rather than
+        # leaving an empty 0700 directory behind on every install attempt.
+        shutil.rmtree(core.recipe_dir(recipe_path), ignore_errors=True)
         ok = os.WIFEXITED(status) and os.WEXITSTATUS(status) == 0
         self.pages["done"].set_result(ok, "".join(self._log_tail))
         self._enter(PAGE_ORDER.index("done"))
