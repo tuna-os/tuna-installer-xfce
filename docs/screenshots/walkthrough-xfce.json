@@ -84,75 +84,75 @@
       "name": "welcome",
       "png": "docs/screenshots/01-welcome.png",
       "rendered": true,
-      "colours": 229,
+      "colours": 230,
       "ink": 0.011494252873563218,
-      "stddev": 0.07299736223082047
+      "stddev": 0.07299814419405236
     },
     {
       "name": "source",
       "png": "docs/screenshots/02-source.png",
       "rendered": true,
-      "colours": 278,
+      "colours": 276,
       "ink": 0.010070899129874316,
-      "stddev": 0.06583128402388375
+      "stddev": 0.06583204135585786
     },
     {
       "name": "destination",
       "png": "docs/screenshots/03-destination.png",
       "rendered": true,
-      "colours": 297,
+      "colours": 296,
       "ink": 0.01307874100333011,
-      "stddev": 0.07563467940740293
+      "stddev": 0.07565133158603748
     },
     {
       "name": "setup",
       "png": "docs/screenshots/04-setup.png",
       "rendered": true,
-      "colours": 296,
+      "colours": 298,
       "ink": 0.009453217316575358,
-      "stddev": 0.0656330884258133
+      "stddev": 0.06563507928378623
     },
     {
       "name": "identity",
       "png": "docs/screenshots/05-identity.png",
       "rendered": true,
-      "colours": 230,
-      "ink": 0.0066870770222365455,
-      "stddev": 0.05731446305999247
+      "colours": 231,
+      "ink": 0.006713932753249543,
+      "stddev": 0.05734334513876878
     },
     {
       "name": "confirm",
       "png": "docs/screenshots/06-confirm.png",
       "rendered": true,
-      "colours": 299,
+      "colours": 296,
       "ink": 0.014072403050811044,
-      "stddev": 0.07514081874278977
+      "stddev": 0.0751710779281716
     },
     {
       "name": "progress",
       "png": "docs/screenshots/07-progress.png",
       "rendered": true,
-      "colours": 302,
+      "colours": 301,
       "ink": 0.0352347190890536,
-      "stddev": 0.14620598419176925
+      "stddev": 0.14620655160270776
     },
     {
       "name": "done",
       "png": "docs/screenshots/08-done.png",
       "rendered": true,
-      "colours": 194,
+      "colours": 197,
       "ink": 0.006901922870340531,
-      "stddev": 0.0611523850446799
+      "stddev": 0.06115457712406414
     }
   ],
   "transition_pixels": [
-    9468,
+    9474,
     9280,
     10335,
     10198,
-    12231,
-    19642,
-    23221
+    12237,
+    19662,
+    23179
   ],
   "spec_drift": [
     "'install' keywords differ from upstream"
