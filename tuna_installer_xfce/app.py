@@ -473,41 +473,32 @@ class InstallerWindow(Gtk.ApplicationWindow):
         return leaf.needs_user_creation if leaf else True
 
     def build_recipe(self):
+        """Read the wizard's pages and hand the values to core.build_recipe.
+
+        Nothing is decided here — this is the widget-reading half only, so the
+        recipe's own rules stay testable without a display.
+        """
         src, setup = self.pages["source"], self.pages["setup"]
         leaf = self.selected_leaf()
         disk = self.pages["destination"].selected_disk()
         identity = self.pages["identity"]
-        fs = setup.default_filesystem(leaf.filesystem if leaf else "")
-        recipe = {
-            "disk": disk["path"],
-            "filesystem": fs,
-            "btrfsSubvolumes": fs == "btrfs" and setup.subvol_check.get_active(),
-            "encryption": {"type": setup.enc_type()},
-            "image": leaf.imgref if leaf else "",
-            "selinuxDisabled": True,
-            "hostname": identity.hostname.get_text(),
-            "distroID": "tunaos",
-        }
-        if "passphrase" in setup.enc_type():
-            recipe["encryption"]["passphrase"] = setup.pass1.get_text()
-        if leaf:
-            if leaf.bootloader:
-                recipe["bootloader"] = leaf.bootloader
-            if leaf.composefs:
-                recipe["composeFsBackend"] = True
-            if leaf.flatpaks and not leaf.flatpaks.startswith("@"):
-                recipe["flatpaks"] = leaf.flatpaks.split()
-        # Always pass detected stores; fisherman ignores unhelpful ones (§4B).
-        if src.stores:
-            recipe["additionalImageStores"] = src.stores
-        if self.needs_user_creation() and identity.username.get_text():
-            recipe["user"] = {
-                "username": identity.username.get_text(),
-                "fullname": identity.fullname.get_text(),
-                "password": identity.password.get_text(),
-                "groups": ["wheel"],
-            }
-        return recipe
+        return core.build_recipe(
+            disk=disk["path"],
+            filesystem=setup.default_filesystem(leaf.filesystem if leaf else ""),
+            btrfs_subvolumes=setup.subvol_check.get_active(),
+            encryption_type=setup.enc_type(),
+            passphrase=setup.pass1.get_text(),
+            image=leaf.imgref if leaf else "",
+            hostname=identity.hostname.get_text(),
+            bootloader=leaf.bootloader if leaf else "",
+            composefs=leaf.composefs if leaf else False,
+            flatpaks=leaf.flatpaks if leaf else "",
+            stores=src.stores,
+            needs_user=self.needs_user_creation(),
+            username=identity.username.get_text(),
+            fullname=identity.fullname.get_text(),
+            password=identity.password.get_text(),
+        )
 
     # --- install ---------------------------------------------------------
 
