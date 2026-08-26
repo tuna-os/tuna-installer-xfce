@@ -136,6 +136,18 @@ class TestCandidateDisks:
         assert disks[0]["model"] == "Virtio"
         assert disks[0]["transport"] == "virtio"
 
+    def test_filters_run_media_iso_live_media(self, monkeypatch):
+        payload = {
+            "blockdevices": [
+                {"type": "disk", "path": "/dev/sda", "size": 10**11, "mountpoints": ["/run/media/iso"]},
+                {"type": "disk", "path": "/dev/sdb", "size": 5*10**11, "mountpoints": []},
+            ]
+        }
+        fake = subprocess.CompletedProcess(args=[], returncode=0, stdout=json.dumps(payload), stderr="")
+        monkeypatch.setattr(core, "host_run", lambda argv, **kw: fake)
+        disks = core.candidate_disks()
+        assert [d["path"] for d in disks] == ["/dev/sdb"]
+
     def test_failure_yields_empty(self, monkeypatch):
         fake = subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="lsblk missing")
         monkeypatch.setattr(core, "host_run", lambda argv, **kw: fake)
