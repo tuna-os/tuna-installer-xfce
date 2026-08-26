@@ -120,6 +120,52 @@ class TestOfflineImages:
         assert core.offline_images(["store"]) == set()
 
 
+class TestImageNode:
+    def test_parent_child_field_inheritance(self):
+        raw_parent = {
+            "name": "Desktop",
+            "registry": "ghcr.io/tuna-os",
+            "bootloader": "systemd-boot",
+            "filesystem": "btrfs",
+            "children": [
+                {
+                    "name": "XFCE",
+                    "tag": "xfce",
+                }
+            ],
+        }
+        parent = core.ImageNode(raw_parent)
+        assert len(parent.children) == 1
+        child = parent.children[0]
+
+        assert child.name == "XFCE"
+        assert child.registry == "ghcr.io/tuna-os"
+        assert child.imgref == "ghcr.io/tuna-os:xfce"
+        assert child.bootloader == "systemd-boot"
+        assert child.filesystem == "btrfs"
+        assert child.is_leaf() is True
+
+        leaves = list(parent.leaves())
+        assert len(leaves) == 1
+        assert leaves[0].name == "XFCE"
+
+
+class TestLoadCatalog:
+    def test_loads_images_json_file(self, tmp_path, monkeypatch):
+        cfg = tmp_path / "images.json"
+        cfg.write_text(json.dumps({
+            "default_image": "ghcr.io/tuna-os/xfce:latest",
+            "fallback_flatpaks": ["org.gnome.Loupe"],
+            "images": [{"name": "XFCE", "imgref": "ghcr.io/tuna-os/xfce:latest"}]
+        }))
+        monkeypatch.setattr(core, "IMAGES_JSON_PATHS", [str(cfg)])
+        default_img, fallbacks, nodes = core.load_catalog()
+        assert default_img == "ghcr.io/tuna-os/xfce:latest"
+        assert fallbacks == ["org.gnome.Loupe"]
+        assert len(nodes) == 1
+        assert nodes[0].name == "XFCE"
+
+
 class TestCandidateDisks:
     def test_filters_non_disks_and_live_media(self, monkeypatch):
         payload = {
