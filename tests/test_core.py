@@ -409,3 +409,106 @@ class TestFisherman:
     def test_shell_quotes_spaces(self):
         cmd = core.fisherman_shell("/path with spaces/recipe.json")
         assert "'/path with spaces/recipe.json'" in cmd
+
+
+class TestHostRun:
+    def test_host_run_flatpak(self, monkeypatch):
+        monkeypatch.setattr(core, "IN_FLATPAK", True)
+        calls = []
+
+        def fake_run(argv, **kw):
+            calls.append(argv)
+            return subprocess.CompletedProcess(args=argv, returncode=0, stdout="", stderr="")
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        core.host_run(["echo", "hi"])
+        assert calls == [["flatpak-spawn", "--host", "echo", "hi"]]
+
+
+class TestReadPrettyNameValueError:
+    def test_shlex_split_value_error(self, tmp_path):
+        f = tmp_path / "os-release"
+        f.write_text('PRETTY_NAME="Unmatched quote\n')
+        assert core._read_pretty_name(str(f)) == "Unmatched quote"
+
+
+class TestLoadCatalogFallback:
+    def test_missing_file_returns_defaults(self, monkeypatch):
+        monkeypatch.setattr(core, "IMAGES_JSON_PATHS", ["/path/that/does/not/exist.json"])
+        default_img, fallbacks, nodes = core.load_catalog()
+        assert default_img == ""
+        assert fallbacks == []
+        assert nodes == []
+
+
+class TestLiveIsoImage:
+    def test_live_iso_image_success(self, monkeypatch, tmp_path):
+        status_json = json.dumps({
+            "status": {
+                "booted": {
+                    "image": {
+                        "image": {
+                            "image": "ghcr.io/tuna-os/xfce:latest"
+                        }
+                    }
+                }
+            }
+        })
+        fake = subprocess.CompletedProcess(args=[], returncode=0, stdout=status_json, stderr="")
+        monkeypatch.setattr(core, "host_run", lambda argv, **kw: fake)
+        cmdline = tmp_path / "cmdline"
+        cmdline.write_text("BOOT_IMAGE=/vmlinuz rd.live.image quiet")
+
+        real_open = open
+
+        def mocked_open(path, *args, **kwargs):
+            if path == "/proc/cmdline":
+                return real_open(cmdline, *args, **kwargs)
+            return real_open(path, *args, **kwargs)
+
+        monkeypatch.setattr("builtins.open", mocked_open)
+        assert core.live_iso_image() == "ghcr.io/tuna-os/xfce:latest"
+
+    def test_live_iso_image_bootc_error(self, monkeypatch):
+        fake = subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="error")
+        monkeypatch.setattr(core, "host_run", lambda argv, **kw: fake)
+        assert core.live_iso_image() is None
+
+    def test_live_iso_image_invalid_json(self, monkeypatch):
+        fake = subprocess.CompletedProcess(args=[], returncode=0, stdout="not-json", stderr="")
+        monkeypatch.setattr(core, "host_run", lambda argv, **kw: fake)
+        assert core.live_iso_image() is None
+
+    def test_live_iso_image_empty_ref(self, monkeypatch):
+        fake = subprocess.CompletedProcess(args=[], returncode=0, stdout="{}", stderr="")
+        monkeypatch.setattr(core, "host_run", lambda argv, **kw: fake)
+        assert core.live_iso_image() is None
+
+    def test_live_iso_image_not_live(self, monkeypatch, tmp_path):
+        status_json = json.dumps({
+            "status": {
+                "booted": {
+                    "image": {
+                        "image": {
+                            "image": "ghcr.io/tuna-os/xfce:latest"
+                        }
+                    }
+                }
+            }
+        })
+        fake = subprocess.CompletedProcess(args=[], returncode=0, stdout=status_json, stderr="")
+        monkeypatch.setattr(core, "host_run", lambda argv, **kw: fake)
+        cmdline = tmp_path / "cmdline"
+        cmdline.write_text("BOOT_IMAGE=/vmlinuz quiet")
+
+        real_open = open
+
+        def mocked_open(path, *args, **kwargs):
+            if path == "/proc/cmdline":
+                return real_open(cmdline, *args, **kwargs)
+            return real_open(path, *args, **kwargs)
+
+        monkeypatch.setattr("builtins.open", mocked_open)
+        monkeypatch.setattr(os.path, "exists", lambda p: False)
+        assert core.live_iso_image() is None
+
