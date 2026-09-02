@@ -2,8 +2,8 @@
   "flavor": "xfce",
   "frames": 8,
   "rendered_frames": 8,
-  "advanced_transitions": 6,
-  "visual_states": 7,
+  "advanced_transitions": 7,
+  "visual_states": 8,
   "activation_key": null,
   "ocr": false,
   "screens": {
@@ -84,78 +84,80 @@
       "name": "welcome",
       "png": "docs/screenshots/01-welcome.png",
       "rendered": true,
-      "colours": 229,
+      "colours": 230,
       "ink": 0.011494252873563218,
-      "stddev": 0.07301352336325512
+      "stddev": 0.07299814419405236
     },
     {
       "name": "source",
       "png": "docs/screenshots/02-source.png",
       "rendered": true,
-      "colours": 269,
-      "ink": 0.009802341819744334,
-      "stddev": 0.06518286237886257
+      "colours": 275,
+      "ink": 0.010070899129874316,
+      "stddev": 0.06583205852672426
     },
     {
       "name": "destination",
       "png": "docs/screenshots/03-destination.png",
       "rendered": true,
-      "colours": 289,
-      "ink": 0.012810183693200129,
-      "stddev": 0.07507502277664836
+      "colours": 296,
+      "ink": 0.01307874100333011,
+      "stddev": 0.07565133158603748
     },
     {
       "name": "setup",
       "png": "docs/screenshots/04-setup.png",
       "rendered": true,
-      "colours": 290,
-      "ink": 0.009184660006445376,
-      "stddev": 0.06496653937203384
+      "colours": 299,
+      "ink": 0.009453217316575358,
+      "stddev": 0.06564175939202418
     },
     {
       "name": "identity",
       "png": "docs/screenshots/05-identity.png",
       "rendered": true,
-      "colours": 217,
-      "ink": 0.006445375443119562,
-      "stddev": 0.05661216989486685
+      "colours": 227,
+      "ink": 0.006713932753249543,
+      "stddev": 0.05738377587273978
     },
     {
       "name": "confirm",
       "png": "docs/screenshots/06-confirm.png",
       "rendered": true,
-      "colours": 217,
-      "ink": 0.006445375443119562,
-      "stddev": 0.05661216989486685
+      "colours": 304,
+      "ink": 0.014072403050811044,
+      "stddev": 0.07522402219607469
     },
     {
       "name": "progress",
       "png": "docs/screenshots/07-progress.png",
       "rendered": true,
-      "colours": 302,
+      "colours": 301,
       "ink": 0.0352347190890536,
-      "stddev": 0.14618278702915505
+      "stddev": 0.14620655160270776
     },
     {
       "name": "done",
       "png": "docs/screenshots/08-done.png",
       "rendered": true,
-      "colours": 199,
+      "colours": 197,
       "ink": 0.006901922870340531,
-      "stddev": 0.061202015368962234
+      "stddev": 0.06115457712406414
     }
   ],
   "transition_pixels": [
-    9427,
+    9474,
     9280,
     10335,
     10198,
-    0,
-    19476,
-    23134
+    12227,
+    19641,
+    23179
   ],
   "spec_drift": [
-    "'install' keywords differ from upstream"
+    "'disk' keywords differ from upstream",
+    "'install' keywords differ from upstream",
+    "'welcome' keywords differ from upstream"
   ],
   "notes": "GPU-less capture: pages are driven programmatically and text is read from the widget tree, so this reports SCREEN PARITY only. It does not measure keyboard navigation, compositor rendering, or that the frontend launches under its real desktop \u2014 those stay the VM walkthrough's job."
 }
