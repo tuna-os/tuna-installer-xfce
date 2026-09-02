@@ -92,15 +92,15 @@
       "name": "source",
       "png": "docs/screenshots/02-source.png",
       "rendered": true,
-      "colours": 275,
+      "colours": 276,
       "ink": 0.010070899129874316,
-      "stddev": 0.06583205852672426
+      "stddev": 0.06583204135585786
     },
     {
       "name": "destination",
       "png": "docs/screenshots/03-destination.png",
       "rendered": true,
-      "colours": 296,
+      "colours": 295,
       "ink": 0.01307874100333011,
       "stddev": 0.07565133158603748
     },
@@ -108,25 +108,25 @@
       "name": "setup",
       "png": "docs/screenshots/04-setup.png",
       "rendered": true,
-      "colours": 299,
+      "colours": 298,
       "ink": 0.009453217316575358,
-      "stddev": 0.06564175939202418
+      "stddev": 0.06563469370213976
     },
     {
       "name": "identity",
       "png": "docs/screenshots/05-identity.png",
       "rendered": true,
-      "colours": 227,
+      "colours": 232,
       "ink": 0.006713932753249543,
-      "stddev": 0.05738377587273978
+      "stddev": 0.05732470567672887
     },
     {
       "name": "confirm",
       "png": "docs/screenshots/06-confirm.png",
       "rendered": true,
-      "colours": 304,
+      "colours": 300,
       "ink": 0.014072403050811044,
-      "stddev": 0.07522402219607469
+      "stddev": 0.07515178284975661
     },
     {
       "name": "progress",
@@ -150,8 +150,8 @@
     9280,
     10335,
     10198,
-    12227,
-    19641,
+    12235,
+    19661,
     23179
   ],
   "spec_drift": [
