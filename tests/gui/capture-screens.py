@@ -286,6 +286,19 @@ def main():
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(REPO, "docs", "screenshots")
     os.makedirs(out, exist_ok=True)
 
+    # Drop the generated files before capturing anything. The workflow uploads
+    # this directory on always(), because a failed capture is exactly when the
+    # pictures are worth looking at — but on a fresh checkout the directory
+    # already holds the committed copies from the last green run. Without this,
+    # a page that never grabs leaves its old PNG in place (the loop below
+    # continues past it), and walkthrough.gif is only rebuilt past the failure
+    # gate at the end, so a failed run's artifact ships the previous run's
+    # animation. Both then read as evidence about this run, which is how a
+    # capture bug gets diagnosed against the wrong image.
+    for stale in os.listdir(out):
+        if stale.endswith(".png") or stale == "walkthrough.gif":
+            os.unlink(os.path.join(out, stale))
+
     app = Gtk.Application(application_id="org.tunaos.installer.xfce.shots")
     frames, findings = [], []
 
