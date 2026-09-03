@@ -84,75 +84,75 @@
       "name": "welcome",
       "png": "docs/screenshots/01-welcome.png",
       "rendered": true,
-      "colours": 230,
+      "colours": 234,
       "ink": 0.011494252873563218,
-      "stddev": 0.07299814419405236
+      "stddev": 0.07260585549264945
     },
     {
       "name": "source",
       "png": "docs/screenshots/02-source.png",
       "rendered": true,
-      "colours": 276,
+      "colours": 279,
       "ink": 0.010070899129874316,
-      "stddev": 0.06583204135585786
+      "stddev": 0.0653934245939696
     },
     {
       "name": "destination",
       "png": "docs/screenshots/03-destination.png",
       "rendered": true,
-      "colours": 295,
+      "colours": 304,
       "ink": 0.01307874100333011,
-      "stddev": 0.07565133158603748
+      "stddev": 0.07537078746185723
     },
     {
       "name": "setup",
       "png": "docs/screenshots/04-setup.png",
       "rendered": true,
-      "colours": 298,
+      "colours": 302,
       "ink": 0.009453217316575358,
-      "stddev": 0.06563469370213976
+      "stddev": 0.06543076088753945
     },
     {
       "name": "identity",
       "png": "docs/screenshots/05-identity.png",
       "rendered": true,
-      "colours": 232,
+      "colours": 234,
       "ink": 0.006713932753249543,
-      "stddev": 0.05732470567672887
+      "stddev": 0.05727068925724044
     },
     {
       "name": "confirm",
       "png": "docs/screenshots/06-confirm.png",
       "rendered": true,
-      "colours": 300,
+      "colours": 302,
       "ink": 0.014072403050811044,
-      "stddev": 0.07515178284975661
+      "stddev": 0.07514592549896647
     },
     {
       "name": "progress",
       "png": "docs/screenshots/07-progress.png",
       "rendered": true,
-      "colours": 301,
+      "colours": 300,
       "ink": 0.0352347190890536,
-      "stddev": 0.14620655160270776
+      "stddev": 0.14620339915967337
     },
     {
       "name": "done",
       "png": "docs/screenshots/08-done.png",
       "rendered": true,
-      "colours": 197,
-      "ink": 0.006901922870340531,
-      "stddev": 0.06115457712406414
+      "colours": 198,
+      "ink": 0.0068750671393275325,
+      "stddev": 0.06114767816640852
     }
   ],
   "transition_pixels": [
-    9474,
-    9280,
+    9454,
+    9316,
     10335,
-    10198,
-    12235,
-    19661,
-    23179
+    10255,
+    12232,
+    19658,
+    23180
   ],
   "spec_drift": [
     "'disk' keywords differ from upstream",
