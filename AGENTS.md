@@ -13,9 +13,12 @@ Human docs: [`README.md`](README.md) (flow, offline behaviour, Flatpak),
 
 | Path | Lines | What |
 |---|---|---|
-| `tuna_installer_xfce/app.py` | ~557 | the wizard: screens, navigation, GTK wiring |
-| `tuna_installer_xfce/core.py` | ~244 | recipe construction, offline/live-ISO detection |
+| `tuna_installer_xfce/app.py` | ~185 | the wizard shell: window, navigation, GTK wiring |
+| `tuna_installer_xfce/pages.py` | ~385 | the screens themselves |
+| `tuna_installer_xfce/core.py` | ~395 | recipe construction, offline/live-ISO detection |
+| `tuna_installer_xfce/readiness.py` | ~130 | pre-install readiness checks |
 | `tuna_installer_xfce/trawlline.py` | ~70 | the one piece of brand |
+| `tests/test_core.py`, `tests/test_readiness.py` | ~610 | headless pytest unit suites for `core` and `readiness` |
 | `tests/gui/` | | `capture-screens.py`, `parity_report.py` |
 
 ```bash
@@ -65,9 +68,21 @@ registry is a broken install, not a slow one.
 
 `screenshots.yml` renders every screen headlessly from the real wizard and
 emits the parity report the shared installer matrix consumes, so a UI change
-that breaks capture breaks that cross-installer report too. There is no unit
-test suite here — `tests/` holds only the GUI capture tooling — so the
-screenshot job is the de-facto gate.
+that breaks capture breaks that cross-installer report too.
+
+There is also a real unit suite: `tests/test_core.py` and
+`tests/test_readiness.py` run headlessly in plain pytest (67 tests, well under
+a second) and cover recipe construction and the readiness checks. Run it before
+touching `core.py` or `readiness.py`:
+
+```bash
+python3 -m pytest tests/test_core.py tests/test_readiness.py -q
+```
+
+Nothing in CI runs it today — `screenshots.yml` is the only workflow and it is
+path-filtered to the capture tooling — so a green PR does not mean the unit
+suite passed. Until that is wired in, the screenshot job is the de-facto gate
+and the unit suite is yours to run.
 
 ## Sibling contract
 
