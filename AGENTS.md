@@ -65,9 +65,9 @@ registry is a broken install, not a slow one.
 
 `screenshots.yml` renders every screen headlessly from the real wizard and
 emits the parity report the shared installer matrix consumes, so a UI change
-that breaks capture breaks that cross-installer report too. There is no unit
-test suite here — `tests/` holds only the GUI capture tooling — so the
-screenshot job is the de-facto gate.
+that breaks capture breaks that cross-installer report too. `tests/test_core.py`
+and `tests/test_readiness.py` are real GTK-free unit tests (`pytest tests/`)
+but are not run in CI — the screenshot job is the only automated gate.
 
 ## Sibling contract
 

@@ -391,3 +391,33 @@ def fisherman_argv(recipe_path):
 
 def fisherman_shell(recipe_path):
     return " ".join(shlex.quote(a) for a in fisherman_argv(recipe_path))
+
+
+# --- install log --------------------------------------------------------------
+#
+# InstallerWindow used to keep fisherman's output only in `self._log_tail`, an
+# in-memory list capped at the last 15 lines and shown on the Done page when an
+# install fails. Close the app (or lose the display, as happens over a QEMU
+# serial console) before reading it and the only record of what fisherman did
+# is gone — the same gap already found and fixed in tuna-installer-kde,
+# -cosmic, -niri and bootc-installer-asahi's frontends. Persist the full
+# transcript to disk so it survives past the wizard process.
+
+INSTALL_LOG_DIR_NAME = "tuna-installer"
+INSTALL_LOG_FILE_NAME = "install.log"
+
+
+def install_log_path():
+    """Path to the persistent install log; ensures its directory exists."""
+    base = os.environ.get("XDG_STATE_HOME") or os.path.join(
+        os.path.expanduser("~"), ".local", "state")
+    log_dir = os.path.join(base, INSTALL_LOG_DIR_NAME)
+    os.makedirs(log_dir, mode=0o700, exist_ok=True)
+    return os.path.join(log_dir, INSTALL_LOG_FILE_NAME)
+
+
+def open_install_log():
+    """Open the persistent install log for appending, creating it 0600."""
+    path = install_log_path()
+    fd = os.open(path, os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600)
+    return os.fdopen(fd, "a")
