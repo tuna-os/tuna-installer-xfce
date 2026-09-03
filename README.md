@@ -79,5 +79,5 @@ libadwaita and follows the system GTK theme).
 
 ## License
 
-GPL-3.0-only
+GPL-3.0-or-later
 
