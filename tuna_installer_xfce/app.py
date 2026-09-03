@@ -56,6 +56,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self.stack.add_named(self.pages[name], name)
         self.index = 0
         self._log_tail = []
+        self._install_log = None
         self.show_all()
         self._enter(0)
 
@@ -126,6 +127,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
         recipe_path = core.write_recipe(self.build_recipe())
         argv = core.fisherman_argv(recipe_path)
         self._log_tail = []
+        self._install_log = core.open_install_log()
+        self._install_log.write(f"=== install started: {core.fisherman_shell(recipe_path)} ===\n")
+        self._install_log.flush()
         flags = GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD
         pid, _in, out, err = GLib.spawn_async(
             argv, flags=flags, standard_output=True, standard_error=True)
@@ -158,6 +162,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
             _status, text, _length, _term = channel.read_line()
             if text:
                 self._log_tail = (self._log_tail + [text])[-15:]
+                if self._install_log:
+                    self._install_log.write(text)
+                    self._install_log.flush()
                 page.append_log(text)
         return not (cond & GLib.IO_HUP)
 
@@ -165,6 +172,11 @@ class InstallerWindow(Gtk.ApplicationWindow):
         GLib.spawn_close_pid(pid)
         shutil.rmtree(core.recipe_dir(recipe_path), ignore_errors=True)
         ok = os.WIFEXITED(status) and os.WEXITSTATUS(status) == 0
+        if self._install_log:
+            outcome = "ok" if ok else f"failed (status {status})"
+            self._install_log.write(f"=== fisherman exited: {outcome} ===\n")
+            self._install_log.close()
+            self._install_log = None
         self.pages["done"].set_result(ok, "".join(self._log_tail))
         self._enter(PAGE_ORDER.index("done"))
 

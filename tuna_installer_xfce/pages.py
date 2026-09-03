@@ -376,7 +376,9 @@ class DonePage(Page):
             self.reboot_btn.show()
         else:
             self.headline.set_markup("<big><b>Installation failed</b></big>")
-            self.body.set_text("The last lines of the install log:\n\n" + log_tail)
+            self.body.set_text(
+                "The last lines of the install log:\n\n" + log_tail +
+                "\n\nFull log: " + core.install_log_path())
             self.reboot_btn.hide()
 
 

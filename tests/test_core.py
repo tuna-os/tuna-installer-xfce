@@ -411,6 +411,50 @@ class TestFisherman:
         assert "'/path with spaces/recipe.json'" in cmd
 
 
+# ─── install log ─────────────────────────────────────────────────────────────
+
+class TestInstallLog:
+    def test_path_under_xdg_state_home(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+        assert core.install_log_path() == str(tmp_path / "tuna-installer" / "install.log")
+
+    def test_falls_back_to_local_state_without_xdg_state_home(self, monkeypatch):
+        monkeypatch.delenv("XDG_STATE_HOME", raising=False)
+        path = core.install_log_path()
+        assert path == os.path.join(
+            os.path.expanduser("~"), ".local", "state", "tuna-installer", "install.log")
+
+    def test_creates_private_directory(self, tmp_path, monkeypatch):
+        import stat
+        monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+        core.install_log_path()
+        mode = stat.S_IMODE(os.stat(tmp_path / "tuna-installer").st_mode)
+        assert mode == 0o700
+
+    def test_open_install_log_creates_0600_file(self, tmp_path, monkeypatch):
+        import stat
+        monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+        f = core.open_install_log()
+        try:
+            f.write("hello\n")
+            f.flush()
+            path = core.install_log_path()
+            mode = stat.S_IMODE(os.stat(path).st_mode)
+            assert mode == 0o600, f"install log must be 0600, got {oct(mode)}"
+        finally:
+            f.close()
+
+    def test_open_install_log_appends_across_calls(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+        f1 = core.open_install_log()
+        f1.write("first\n")
+        f1.close()
+        f2 = core.open_install_log()
+        f2.write("second\n")
+        f2.close()
+        assert open(core.install_log_path()).read() == "first\nsecond\n"
+
+
 class TestHostRun:
     def test_host_run_flatpak(self, monkeypatch):
         monkeypatch.setattr(core, "IN_FLATPAK", True)
