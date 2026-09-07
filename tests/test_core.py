@@ -55,6 +55,11 @@ class TestReadPrettyName:
         f.write_text("NAME=Something\nPRETTY_NAME=\nID=tunaos\n")
         assert core._read_pretty_name(str(f)) == ""
 
+    def test_no_pretty_name_line_at_all(self, tmp_path):
+        f = tmp_path / "os-release"
+        f.write_text("NAME=Something\nID=tunaos\n")
+        assert core._read_pretty_name(str(f)) == ""
+
 
 class TestResolveProductName:
     def test_first_path_wins(self, tmp_path, monkeypatch):
