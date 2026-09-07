@@ -94,3 +94,17 @@ class TestArm:
         body = (tmp_path / readiness.STAMP_NAME).read_text()
         assert "window=FakeWidget" in body
         assert "page=" not in body
+
+
+class TestWriteStampFailure:
+    def test_write_failure_is_logged_and_swallowed(self, tmp_path, monkeypatch, caplog):
+        monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
+
+        def boom_open(*args, **kwargs):
+            raise OSError("read-only file system")
+
+        monkeypatch.setattr("builtins.open", boom_open)
+        with caplog.at_level("ERROR"):
+            readiness.write_stamp("org.tunaos.InstallerXfce", "InstallerWindow")
+        assert "could not write readiness stamp" in caplog.text
+        assert not (tmp_path / readiness.STAMP_NAME).exists()
