@@ -1,5 +1,10 @@
 # AGENTS.md — agent guide for tuna-os/tuna-installer-xfce
 
+> **Moved.** This code is now `frontends/xfce/` in `tuna-os/bootc-installer`
+> (imported with history, 2026-09-17). Make changes there, not here; this
+> repository is frozen pending archival. The guide below is kept for
+> reference and matches the monorepo copy apart from workflow paths.
+
 A **GTK3 / PyGObject wizard** that drives the
 [fisherman](https://github.com/tuna-os/fisherman) bootc install backend.
 Deliberately the plainest of the TunaOS installer frontends: no libadwaita, it
