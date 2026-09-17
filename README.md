@@ -1,3 +1,13 @@
+> ## This repository has moved
+>
+> The xfce installer now lives in the **bootc-installer monorepo**:
+> [`tuna-os/bootc-installer` → `frontends/xfce/`](https://github.com/tuna-os/bootc-installer/tree/dev/frontends/xfce).
+> The import on 2026-09-17 kept the full history.
+> [docs/MIGRATION.md](https://github.com/tuna-os/bootc-installer/blob/dev/docs/MIGRATION.md)
+> lists the open pull requests and issues of this repository. Re-home them
+> there. After that, the maintainers archive this repository. Do not open
+> new work here.
+
 # TunaOS XFCE Installer — GTK3 frontend for fisherman
 
 <p align="center">
