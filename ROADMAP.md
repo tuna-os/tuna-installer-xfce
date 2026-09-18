@@ -1,6 +1,7 @@
 # TunaOS XFCE Installer — Roadmap
 
-**Last updated**: 2026-08-24 | **Maintainer**: tuna-os (hanthor)
+**Last updated**: 2026-09-18 | **Maintainer**: tuna-os (hanthor)
+**Lifecycle Status**: Deprecated / Sunset (Migrated to `tuna-os/bootc-installer` -> `frontends/xfce/`)
 
 ---
 
@@ -15,21 +16,21 @@ first-time XFCE user gets a native install from first boot to desktop.
 
 ## Current Status
 
+- **Monorepo Migration**: On 2026-09-17, the XFCE installer code and history were
+  formally imported into [tuna-os/bootc-installer](https://github.com/tuna-os/bootc-installer/tree/dev/frontends/xfce).
+- **Standalone Repository Status**: Deprecated. Active development, issue tracking, and PRs
+  are transitioning to `tuna-os/bootc-installer`.
 - **App**: GTK3 frontend for fisherman; CI-rendered walkthrough in
-  docs/gui-walkthrough.md.
-- **Distribution**: image-baked flatpak — no standalone GitHub Releases (by
-  design, not yet documented as policy).
-- **Parity**: covered by `installer-smoke.yml` + `docs/INSTALLER-FRONTENDS.md`
-  checks (readiness stamp, non-blank, advances, per-screen OCR).
-- **Health**: active (pushed 08-24); 40 unit tests exist but nothing runs them
-  in CI (#23).
+  `docs/gui-walkthrough.md`.
+- **Distribution**: image-baked flatpak — no standalone GitHub Releases.
 
 ### Priorities
 
 | Priority | Item | Tracking | Status |
 |----------|------|----------|--------|
-| P0 | Wire 40 existing unit tests into CI | #23 | 🟡 Open |
-| P2 | ROADMAP-coverage entry in org ROADMAP tally | #1295 | ⬜ Not started |
+| P0 | Re-home active open issues and PRs to `tuna-os/bootc-installer` | #77 | 🟡 In Progress |
+| P1 | Transition standalone repository to read-only archive | #76 | 🟡 In Progress |
+| P2 | Wire unit tests and test automation in `bootc-installer` CI | bootc-installer #23 | ⬜ Re-homed |
 
 ---
 
@@ -37,20 +38,18 @@ first-time XFCE user gets a native install from first boot to desktop.
 
 ### Current Quarter (2026 Q3)
 
-**Theme**: make the test suite run
+**Theme**: monorepo migration and repository sunset
 
 | Goal | Owner | Tracking | Status |
 |------|-------|----------|--------|
-| Unit tests running in CI | hanthor | #23 | ⬜ Not started |
+| Import XFCE frontend into `bootc-installer` monorepo | tuna-os | #75 | ✅ Complete |
+| Re-home open issues/PRs to `tuna-os/bootc-installer` | hanthor | #77 | 🟡 In Progress |
 
 ### Next Quarter (2026 Q4)
 
-**Theme**: parity and cadence
+**Theme**: archive and monorepo maintenance
 
 | Goal | Owner | Tracking | Status |
 |------|-------|----------|--------|
-| Document release/versioning model (image-baked vs tagged) | tuna-os | (org #2020) | ⬜ Not started |
-
----
-
-*ROADMAP added by strategist agent (ACMM L6 — full mode). Signed-off-by: hanthor-hive-agent[bot] <290068839+hanthor-hive-agent[bot]@users.noreply.github.com>*
+| Archive standalone `tuna-installer-xfce` repository as read-only | tuna-os | #76 | ⬜ Scheduled |
+| Parity and CI integration within `bootc-installer` | tuna-os | bootc-installer | ⬜ Scheduled |
